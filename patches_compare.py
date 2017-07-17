@@ -1,43 +1,61 @@
 # coding: utf-8
-import requests
-import re
 
-def get_urls():
+import os.path
+import os
+import shutil
+from wgc_functions import *
+from launcher_functions import *
 
-	http_url = 'http://update.worldoftanks.asia'
-	params = dict()
-	locs = ['en', 'fil', 'id', 'ja', 'ko', 'ms', 'th', 'vi', 'zh_sg', 'zh_tw']
-	list_with_urls = list()
-	params['protocol_ver'] = '4'
-	params['install_id'] = 'CF4D3B3C1C11CC8067F81B6967F81B690E861BBE'
-	params['target'] = 'locale'
-	params['locale_ver'] = '0'
-	params['lang'] = 'en'
-	for loc in locs:
-		params['lang'] = loc
-		response = requests.get(http_url, params=params)
-		content = response.content
-		pattern = r'<http name="\w*">(.*)</http>'
-		url_to_donwload = re.search(pattern, content)
-		list_with_urls.append(url_to_donwload.group(1))
-	return list_with_urls
+try:
+    import xml.etree.cElementTree as et
+except ImportError:
+    import xml.etree.ElementTree as et
 
 
-def download_patches(list_with_urls):
-	for url in list_with_urls:
-		response = requests.get(url)
-		patch_name = re.split('/', url)[-1]
-		with open(patch_name, 'wb') as patch:
-			patch.write(response.content)
-
-
-def compare_patches():
-	pass
+def compare_patches(realm):
+    flag = True
+    reference_dir = '{}_reference'.format(realm)
+    print 'Patches comparing...'
+    reference_path = os.path.join(os.getcwd(), reference_dir)
+    downloaded_path = os.path.join(os.getcwd(), realm)
+    reference_patches = os.listdir(reference_dir)
+    downloaded_patches = os.listdir(realm)
+    if not reference_patches == downloaded_patches:
+        raise Exception('List of downloaded patches is different with reference')
+    for patch in downloaded_patches:
+        if not open(os.path.join(reference_path, patch)).read() == open(os.path.join(downloaded_path, patch)).read():
+            flag = False
+            print 'Downloaded patch {} is not the same with reference'.format(patch)
+    if flag:
+        print 'Patches are same with references'
 
 
 def main():
-	urls = get_urls()
-	download_patches(urls)
+    while True:
+        distribution = raw_input('Enter 1 for launcher, 2 for wgc and 0 for exit\n')
+        if distribution == '0':
+            exit()
+        if distribution in ['1', '2']:
+            break
+
+    while True:
+        realm = raw_input('Enter region: ru, eu, na, sg{} or 0 to exit\n'.format(', cn' if distribution == '1' else ''))
+        if distribution == '1' and realm in ['ru', 'eu', 'na', 'sg', 'cn']:
+            break
+        elif distribution == '2' and realm in ['ru', 'eu', 'na', 'sg']:
+            break
+        elif realm == '0':
+            exit()
+    if os.path.exists(realm):
+        shutil.rmtree(realm)
+    os.mkdir(realm)
+    if distribution == '1':
+        get_patches_with_launcher(realm)
+    else:
+        get_patches_with_wgc(realm)
+
+    compare_patches(realm)
+
 
 if __name__ == '__main__':
-	main()
+    main()
