@@ -54,6 +54,10 @@ def get_patches_with_wgc(realm):
         raw_input()
         exit()
     cleanup_update_folder(path_to_update_folder)
+    for proc in psutil.process_iter():
+        if proc.name() == 'wgc.exe':
+            proc.kill()
+            break
     for lang in DISTRIBUTION_PARAMS[realm]['langs']:
         change_game_info(path_to_game_info, lang)
         loc_rev = get_localization_rev(path_to_game_info)
