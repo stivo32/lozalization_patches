@@ -6,11 +6,6 @@ import shutil
 from wgc_functions import *
 from launcher_functions import *
 
-try:
-    import xml.etree.cElementTree as et
-except ImportError:
-    import xml.etree.ElementTree as et
-
 
 def compare_patches(realm):
     flag = True

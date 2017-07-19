@@ -64,11 +64,9 @@ def get_urls(realm):
 def download_patches(realm, list_with_urls):
     if not os.path.exists(realm):
         os.mkdir(realm)
-    patch_names = list()
     for url in list_with_urls:
         response = requests.get(url)
         patch_name = re.split('/', url)[-1]
-        patch_names.append(patch_name)
         if response:
             print '{} has been downloaded'.format(patch_name)
         open(os.path.join(os.getcwd(), realm, patch_name), 'wb').write(response.content)
